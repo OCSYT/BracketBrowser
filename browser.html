@@ -237,11 +237,13 @@
             var urlPattern = /(?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?:\/\S*)?/gi;
             if (urlPattern.test(searchValue)) {
                 if (!searchValue.includes("file://")) {
-                    if (searchValue.includes("http") && !searchValue.includes("https")) {
-                        searchValue = "http://" + extractDomainAndPath(searchValue);
-                    }
-                    else {
-                        searchValue = "https://" + extractDomainAndPath(searchValue);
+                    if (!searchValue.includes("http") && !searchValue.includes("https")) {
+                        if (searchValue.includes("http") && !searchValue.includes("https")) {
+                            searchValue = "http://" + searchValue;
+                        }
+                        else {
+                            searchValue = "https://" + searchValue;
+                        }
                     }
                 }
             }
@@ -455,7 +457,7 @@
             window.electron.ipcRenderer.invoke('closetab', escapedTab).then((result) => {
                 displayTabs();
             });
-            if(currentpage == tabname){
+            if (currentpage == tabname) {
                 document.getElementById('search-input').value = "";
             }
         }
