@@ -248,8 +248,20 @@
                 }
             }
             else {
-                searchValue = buildURL(searchValue);
+                var ipAddressPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+                var withoutProtocol = searchValue.replace("http://", "").replace("https://", "");
+                if (ipAddressPattern.test(withoutProtocol)) {
+                    if(searchValue.includes("http") && !searchValue.includes("https")){
+                        searchValue = "http://" + withoutProtocol;
+                    }
+                    else{
+                        searchValue = "https://" + withoutProtocol;
+                    }
+                } else {
+                    searchValue = buildURL(searchValue);
+                }
             }
+
             window.electron.ipcRenderer.invoke('newpage', searchValue).then((result) => {
                 console.log(result);
                 currentpage = searchValue;
