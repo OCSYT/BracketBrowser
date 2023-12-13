@@ -1,0 +1,1 @@
+npx electron-packager . BracketBrowser --platform=linux,win32 --arch=all --icon="C:\Users\Creep\Desktop\BracketBrowser\my-electron-app\BracketBrowser.ico"
