@@ -14,10 +14,18 @@
             background-color: #2e3039;
             color: white;
             font-family: Arial, Helvetica, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .header {
+            overflow-x: hidden;
+            position: fixed;
+            height: 160px;
+            width: 100%;
         }
 
         .custom-controls {
-            position: fixed;
+            position: relative;
             top: 0;
             left: 0;
             width: 100%;
@@ -53,35 +61,25 @@
         #maximize-btn::before,
         #close-btn::before {
             content: '';
-            position: absolute;
+            position: relative;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
         }
 
-        #minimize-btn::before {
-            content: '—';
-        }
-
-        #maximize-btn::before {
-            content: '□';
-        }
-
-        #close-btn::before {
-            content: '✖';
-        }
-
         .search-bar {
-            position: fixed;
-            top: 40px;
+            display: inline-flex;
+            position: relative;
+            top: 0px;
             width: 100%;
             height: 40px;
             align-items: center;
             box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.2);
-            z-index: 998;
+            z-index: 999;
         }
 
         .search-bar input[type="text"] {
+            display: inline-flex;
             padding: 8px;
             border-radius: 5px;
             border: 1px solid #ccc;
@@ -89,51 +87,11 @@
             color: #ffffff;
             flex-grow: 1;
             margin-right: 10px;
-            width: 100%;
         }
 
-        #tabs-container {
-            position: fixed;
-            bottom: 40px;
-            /* Adjusted to accommodate the bookmarks bar */
-            font-size: 12px;
-            left: 0;
-            width: 100%;
-            height: 30px;
-            padding: 5px 10px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            z-index: 997;
-            /* Lower z-index to stay above content but below search and controls */
-            background-color: #1a1b20;
-            box-shadow: 0px -1px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .tab {
-            background-color: #2e3039;
-            padding: 8px 12px;
-            border-radius: 5px 5px 0 0;
-            cursor: pointer;
-            white-space: nowrap;
-            margin-bottom: -1px;
-        }
-
-        .tab:hover {
-            background-color: #525563;
-        }
-
-        .tab button {
-            margin-left: 5px;
-            padding: 3px;
-            border: none;
-            background-color: transparent;
-            color: #ffffff;
-            cursor: pointer;
-        }
 
         #bookmarks-container {
-            position: fixed;
+            position: relative;
             bottom: 0;
             font-size: 12px;
             left: 0;
@@ -162,77 +120,85 @@
             background-color: #525563;
         }
 
-        .bookmark button {
+        button {
             margin-left: 5px;
             padding: 3px;
             border: none;
             background-color: transparent;
-            color: #333;
+            color: white;
             cursor: pointer;
         }
 
         .logo {
-            position: absolute;
+            position: fixed;
             left: 5px;
-            top: 0;
+            top: -5px;
             font-size: 10px;
             color: #00eeff;
             font-family: Arial, sans-serif;
-            z-index: 1000;
         }
     </style>
 </head>
 
 <body>
-    <div class="logo">
-        <h1>{BracketBrowser}</h1>
-    </div>
-    <div id="custom-controls" class="custom-controls">
-        <button id="back-btn">◄</button>
-        <button id="forward-btn">►</button>
-        <button id="minimize-btn">-</button>
-        <button id="maximize-btn">+</button>
-        <button id="close-btn">x</button>
-    </div>
-    <div id="tabs-container">
-    </div>
-    <div id="bookmarks-container">
+    <div class="header">
+        <div id="custom-controls" class="custom-controls">
+            <div class="logo">
+                <h1>{BracketBrowser}</h1>
+            </div>
+            <button id="back-btn">◄</button>
+            <button id="forward-btn">►</button>
+            <button id="minimize-btn">—</button>
+            <button id="maximize-btn">□</button>
+            <button id="close-btn">✖</button>
+        </div>
+        <form id="search-form" class="search-bar">
+            <button onclick="addpageasbookmark()" type="button">Add bookmark</button><input type="text"
+                id="search-input" placeholder="Search...">
+        </form>
+        <tab-group new-tab-button="false" sortable="true">
+            <style>
+                .views {
+                    position: fixed;
+                    bottom: 0;
+                    width: 100%;
+                    height: calc(100% - 150px);
+                    z-index: 10000;
+                }
+                .buttons {
+                    display: none;
+                }
+    
+                .nav.visible {
+                    background-color: #2e3039;
+                    color: white;
+                }
+                .tab.visible{
+                    background-color: #2e3039;
+                    color: white;
+                }
+                .tab.visible.active{
+                    background-color: #525563;
+                    color: white;
+                }
+            </style>
+        </tab-group>
+        <div id="bookmarks-container">
+        </div>
     </div>
 
-    <form id="search-form" class="search-bar">
-        <input type="text" id="search-input" placeholder="Search...">
-    </form>
-
+    <script src="node_modules/electron-tabs/dist/electron-tabs.js"></script>
     <script>
-
         window.onbeforeunload = function () {
-            return ""
+            return "";
         }
 
-        let tabs = [];
         let prevLink = "";
         let currentpage = "";
         let forwardLink = "";
 
-
-
-        function extractDomainAndPath(url) {
-            const cleanUrl = url.replace(/(https?:\/\/)?(www\.)?/, ''); // Remove 'http(s)://' and 'www.' prefixes
-            const urlParts = cleanUrl.split('/'); // Split the URL into domain and path
-            if (urlParts[1]) {
-                return urlParts[0] + "/" + urlParts[1];
-            }
-            else {
-                return urlParts[0];
-            }
-        }
-
-
         document.getElementById('search-form').addEventListener('submit', function (event) {
             event.preventDefault();
-            if (currentpage != "") {
-                prevLink = (currentpage);
-            }
             var searchValue = document.getElementById('search-input').value;
             var urlPattern = /(?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?:\/\S*)?/gi;
             if (urlPattern.test(searchValue)) {
@@ -251,10 +217,10 @@
                 var ipAddressPattern = /^(\d{1,3}\.){3}\d{1,3}(?::\d+)?$/
                 var withoutProtocol = searchValue.replace("http://", "").replace("https://", "");
                 if (ipAddressPattern.test(withoutProtocol)) {
-                    if(searchValue.includes("http") && !searchValue.includes("https")){
+                    if (searchValue.includes("http") && !searchValue.includes("https")) {
                         searchValue = "http://" + withoutProtocol;
                     }
-                    else{
+                    else {
                         searchValue = "https://" + withoutProtocol;
                     }
                 } else {
@@ -262,32 +228,8 @@
                 }
             }
 
-            window.electron.ipcRenderer.invoke('newpage', searchValue).then((result) => {
-                console.log(result);
-                currentpage = searchValue;
-                forwardLink = "";
-            });
-
-
-            document.getElementById('search-input').value = "";
+            LoadNewLink(searchValue);
         });
-
-
-        function createTab(url) {
-            if (url !== undefined) {
-                let isSimilar = false;
-                tabs.forEach(tab => {
-                    if (urlsAreSimilar(tab, url)) {
-                        isSimilar = true;
-                    }
-                });
-
-                if (!isSimilar) {
-                    tabs.push(url);
-                }
-                displayTabs();
-            }
-        }
 
         function buildURL(string) {
             string = string.split("");
@@ -295,61 +237,16 @@
             for (let i = 0; i < string.length; i++) {
                 if (string.i === " ") return url = `${url}%20`
                 url = `${url}${string[i]}`
-                console.log(url);
             }
             return url
         }
+        function isInputBoxSelected() {
+            const focusedElement = document.activeElement;
 
+            // Check if the focused element is an input element
+            const isInput = focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA';
 
-
-        function displayTabs() {
-            const tabsContainer = document.getElementById('tabs-container');
-            tabsContainer.innerHTML = '';
-
-            tabs.forEach((tab, index) => {
-                const tabElement = document.createElement('div');
-                tabElement.classList.add('tab');
-                let shortenedTab = tab.substring(0, 60);
-                tabElement.textContent = `${shortenedTab}`;
-
-
-                // Load link when clicking on tab
-                tabElement.addEventListener('click', () => {
-                    loadTabLink(tab);
-                });
-
-                // Add star/bookmark button for each tab
-                const starButton = document.createElement('button');
-                starButton.textContent = '★'; // You can use any symbol or text for the bookmark button
-                starButton.classList.add('star-button');
-
-                starButton.addEventListener('click', (event) => {
-                    event.stopPropagation();
-                    addBookmark(tab); // Call function to add the tab as a bookmark
-                });
-
-                // Add remove button for each tab
-                const removeButton = document.createElement('button');
-                removeButton.textContent = '❌';
-                removeButton.addEventListener('click', (event) => {
-                    event.stopPropagation(); // Prevent tab click event from firing
-                    removeTab(index);
-                });
-
-                tabElement.appendChild(starButton);
-                tabElement.appendChild(removeButton);
-                tabsContainer.appendChild(tabElement);
-            });
-        }
-
-
-        function loadTabLink(link) {
-            window.electron.ipcRenderer.invoke('newpage', link).then((result) => {
-                console.log("success");
-                prevLink = currentpage;
-                currentpage = link;
-                forwardLink = "";
-            });
+            return isInput;
         }
 
         function LoadNewLink(url) {
@@ -357,60 +254,68 @@
                 prevLink = currentpage;
                 currentpage = url;
                 forwardLink = "";
-                if (!tabs.includes(currentpage)) {
-                    tabs.push(currentpage);
-                    displayTabs();
-                }
             });
-        }
 
+            const tabGroup = document.querySelector("tab-group");
 
-        function urlsAreSimilar(url1, url2) {
-            const simplifyURL = (url) => {
-                return url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
+            const tab = tabGroup.addTab({
+                title: url,
+                src: url,
+            });
+
+            // Activate the tab
+            tab.activate();
+
+            // Function to update tab title when 'src' changes
+            const updateTabTitle = (newSrc) => {
+                tab.setTitle(newSrc); // Set tab title to match the new 'src'
             };
 
-            const simplifiedUrl1 = simplifyURL(url1);
-            const simplifiedUrl2 = simplifyURL(url2);
+            // Function to listen for changes in 'src'
+            const listenForSrcChanges = () => {
+                const interval = setInterval(() => {
+                    const search = document.getElementById('search-input');
+                    if (tabGroup.getActiveTab().getTitle() != tabGroup.getActiveTab().webview.src ||
+                        (tabGroup.getActiveTab().getTitle() != search.value && !isInputBoxSelected())) {
+                        search.value = tabGroup.getActiveTab().webview.src;
+                        tabGroup.getActiveTab().setTitle(tabGroup.getActiveTab().webview.src);
+                        currentpage = tabGroup.getActiveTab().webview.src;
+                    }
+                }, 500);
+            };
 
-            return simplifiedUrl1 === simplifiedUrl2;
+            // Start listening for 'src' changes
+            listenForSrcChanges();
         }
 
-        function ReplaceTab(url) {
-            if (url !== undefined) {
-                prevLink = (currentpage);
-                forwardLink = "";
+        function LoadNewLink_tab(url) {
+            const tabGroup = document.querySelector("tab-group");
 
-                let isSimilar = false;
-                tabs.forEach(tab => {
-                    if (urlsAreSimilar(tab, url)) {
-                        isSimilar = true;
-                    }
+            // Check if a tab with the same URL already exists
+            const existingTab = tabGroup.getTabs().find(tab => tab.webview.src === url);
+            console.log(existingTab);
+            if (existingTab) {
+                // If the tab already exists, activate it
+                existingTab.activate();
+            } else {
+                // If the tab doesn't exist, create a new one
+                const tab = tabGroup.addTab({
+                    title: url,
+                    src: url,
                 });
 
-                if (!isSimilar) {
-                    console.log(tabs);
-                    tabs.forEach(tab => {
-                        if (tab == currentpage) {
-                            tabs.splice(tabs.indexOf(tab), 1);
-                            tabs.push(url);
-                            currentpage = url;
-                            document.getElementById('search-input').value = url;
-                        }
-                    });
-                }
-                displayTabs();
+                // Activate the newly created tab
+                tab.activate();
+
+                // Function to update tab title when 'src' changes
+                const updateTabTitle = (newSrc) => {
+                    tab.setTitle(newSrc);
+                };
             }
         }
 
 
-
-        function newpage(url) {
-            document.getElementById('search-input').value = url;
-        }
-
         bookmarks = [];
-
 
         function saveBookmarks() {
             localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
@@ -428,6 +333,9 @@
 
         loadBookmarks();
 
+        function addpageasbookmark() {
+            addBookmark(currentpage);
+        }
 
         function addBookmark(url) {
             if (bookmarks.includes(url) == false) {
@@ -460,32 +368,13 @@
             }
         }
 
-
-
-        function removeTab(index) {
-            var tabname = tabs[index];
-            tabs.splice(index, 1);
-            const escapedTab = (tabname);
-            window.electron.ipcRenderer.invoke('closetab', escapedTab).then((result) => {
-                displayTabs();
-            });
-            if (currentpage == tabname) {
-                document.getElementById('search-input').value = "";
-            }
-        }
-
         document.getElementById('back-btn').addEventListener('click', () => {
             if (prevLink !== "" && currentpage !== "") {
-                console.log(prevLink);
-                console.log(currentpage);
                 window.electron.ipcRenderer.invoke('newpage', prevLink).then((result) => {
-                    console.log("success");
                     forwardLink = currentpage;
                     currentpage = prevLink;
                     prevLink = "";
-                    if (!tabs.includes(currentpage)) {
-                        createTab(currentpage);
-                    }
+                    LoadNewLink_tab(currentpage);
                 });
             }
         });
@@ -493,22 +382,15 @@
         document.getElementById('forward-btn').addEventListener('click', () => {
             if (forwardLink !== "" && currentpage !== "") {
                 window.electron.ipcRenderer.invoke('newpage', forwardLink).then((result) => {
-                    console.log("success");
                     prevLink = currentpage;
                     currentpage = forwardLink;
                     forwardLink = "";
-                    if (!tabs.includes(currentpage)) {
-                        createTab(currentpage);
-                    }
+                    LoadNewLink_tab(currentpage);
                 });
             }
         });
 
-
-
-
         const controls = document.getElementById("custom-controls");
-
 
         controls.addEventListener('mousedown', (event) => {
             if (event.target === controls) {
@@ -526,22 +408,18 @@
             window.electron.ipcRenderer.send('drag:end');
         });
 
-
-
         document.getElementById('minimize-btn').addEventListener('click', () => {
             window.electron.ipcRenderer.send('minimize-window');
         });
-
-
 
         document.getElementById('maximize-btn').addEventListener('click', () => {
             window.electron.ipcRenderer.send('maximize-window');
         });
 
-
         document.getElementById('close-btn').addEventListener('click', () => {
             window.electron.ipcRenderer.send('close-window');
         });
+
         LoadNewLink("https://google.com/")
     </script>
 </body>

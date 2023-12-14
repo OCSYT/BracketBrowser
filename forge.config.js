@@ -1,6 +1,20 @@
 module.exports = {
   packagerConfig: {
     asar: true,
+    protocols: [
+      {
+        name: "http",
+        schemes: ["http"]
+      },
+      {
+        name: "https",
+        schemes: ["https"]
+      },
+      {
+        name: "file",
+        schemes: ["file"]
+      }
+    ]
   },
   rebuildConfig: {},
   makers: [
