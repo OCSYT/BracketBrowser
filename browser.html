@@ -77,7 +77,8 @@
             box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.2);
             z-index: 999;
         }
-        .search-bar>button{
+
+        .search-bar>button {
             margin: 15px;
         }
 
@@ -158,7 +159,7 @@
         <form id="search-form" class="search-bar">
             <button onclick="reload()" type="button">↻</button>
             <button onclick="addpageasbookmark()" type="button">☆</button>
-            <input type="text"id="search-input" placeholder="Search...">
+            <input type="text" id="search-input" placeholder="Search...">
         </form>
         <tab-group new-tab-button="false" sortable="true">
             <style>
@@ -169,19 +170,22 @@
                     height: calc(100% - 150px);
                     z-index: 10000;
                 }
+
                 .buttons {
                     display: none;
                 }
-    
+
                 .nav.visible {
                     background-color: #2e3039;
                     color: white;
                 }
-                .tab.visible{
+
+                .tab.visible {
                     background-color: #2e3039;
                     color: white;
                 }
-                .tab.visible.active{
+
+                .tab.visible.active {
                     background-color: #525563;
                     color: white;
                 }
@@ -253,7 +257,7 @@
             return isInput;
         }
 
-        
+
         function LoadNewLink(url) {
             window.electron.ipcRenderer.invoke('newpage', url).then((result) => {
                 prevLink = currentpage;
@@ -280,11 +284,22 @@
             const listenForSrcChanges = () => {
                 const interval = setInterval(() => {
                     const search = document.getElementById('search-input');
-                    if (tabGroup.getActiveTab().getTitle() != tabGroup.getActiveTab().webview.src ||
-                        (tabGroup.getActiveTab().getTitle() != search.value && !isInputBoxSelected())) {
-                        search.value = tabGroup.getActiveTab().webview.src;
-                        tabGroup.getActiveTab().setTitle(tabGroup.getActiveTab().webview.src);
-                        currentpage = tabGroup.getActiveTab().webview.src;
+                    if (tabGroup.getActiveTab() != null) {
+                        const length = 25;
+                        const tabtitle = tabGroup.getActiveTab().getTitle().substring(0, length);
+                        const tabsrc = tabGroup.getActiveTab().webview.src.substring(0, length);
+                        if (tabtitle != tabsrc ||
+                            (tabtitle != search.value && !isInputBoxSelected())) {
+                            search.value = tabsrc;
+                            tabGroup.getActiveTab().setTitle(tabsrc);
+                        }
+                        if(currentpage != tabGroup.getActiveTab().webview.src){
+                            currentpage = tabGroup.getActiveTab().webview.src;
+                        }
+                    }
+                    else if(!isInputBoxSelected()){
+                        search.value = "";
+                        currentpage = "";
                     }
                 }, 500);
             };
@@ -339,8 +354,8 @@
         loadBookmarks();
 
 
-        function reload(){
-            if(currentpage != ""){
+        function reload() {
+            if (currentpage != "") {
                 const tabGroup = document.querySelector("tab-group");
                 const existingTab = tabGroup.getTabs().find(tab => tab.webview.src === currentpage);
                 existingTab.close();
