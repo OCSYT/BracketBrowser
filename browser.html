@@ -150,13 +150,13 @@
             <div class="logo">
                 <h1>{BracketBrowser}</h1>
             </div>
-            <button id="back-btn">◄</button>
-            <button id="forward-btn">►</button>
             <button id="minimize-btn">—</button>
             <button id="maximize-btn">□</button>
             <button id="close-btn">✖</button>
         </div>
         <form id="search-form" class="search-bar">
+            <button id="back-btn" type="button">◄</button>
+            <button id="forward-btn" type="button">►</button>
             <button onclick="reload()" type="button">↻</button>
             <button onclick="addpageasbookmark()" type="button">☆</button>
             <input type="text" id="search-input" placeholder="Search...">
@@ -294,6 +294,7 @@
                             tabGroup.getActiveTab().setTitle(tabsrc);
                         }
                         if(currentpage != tabGroup.getActiveTab().webview.src){
+                            prevLink = currentpage;
                             currentpage = tabGroup.getActiveTab().webview.src;
                         }
                     }
