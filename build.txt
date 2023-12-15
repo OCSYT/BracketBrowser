@@ -1,1 +1,1 @@
-npx electron-packager . BracketBrowser --protocol=http --protocol-name="http" --protocol=https --protocol-name="https" --protocol=file --protocol-name="file" --platform=linux,win32 --arch=all --icon="C:\Users\Creep\Desktop\BracketBrowser\my-electron-app\BracketBrowser.ico"
+npx electron-packager . BracketBrowser --protocol=http --protocol-name="http" --protocol=https --protocol-name="https" --protocol=file --protocol-name="file" --platform=linux,win32 --arch=all --icon="C:\Users\Creep\Desktop\BracketBrowser\my-electron-app\BracketBrowser.ico" --overwrite
