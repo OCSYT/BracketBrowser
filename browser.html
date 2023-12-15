@@ -289,8 +289,8 @@
                         const tabtitle = tabGroup.getActiveTab().getTitle().substring(0, length);
                         const tabsrc = tabGroup.getActiveTab().webview.src.substring(0, length);
                         if (tabtitle != tabsrc ||
-                            (tabtitle != search.value && !isInputBoxSelected())) {
-                            search.value = tabsrc;
+                            (tabtitle != search.value.substring(0, length) && !isInputBoxSelected())) {
+                            search.value = tabGroup.getActiveTab().webview.src;
                             tabGroup.getActiveTab().setTitle(tabsrc);
                         }
                         if(currentpage != tabGroup.getActiveTab().webview.src){
