@@ -87,7 +87,14 @@ function loadnewpage(mainWindow, url){
 }
 
 function loadPlugins(mainWindow) {
-  const pluginsFolderPath = path.join(path.dirname(process.resourcesPath), '/plugins/').replaceAll("\\", "/");
+  var env = process.env.NODE_ENV || 'development';
+  var pluginsFolderPath = null;
+  if(env != "development"){
+    pluginsFolderPath = path.join(path.dirname(process.resourcesPath), '/plugins/').replaceAll("\\", "/");
+  }
+  else{
+    pluginsFolderPath = path.join(__dirname, '/plugins/').replaceAll("\\", "/");
+  }
   fs.readdir(pluginsFolderPath, (err, files) => {
     if (err) {
       console.log('Error reading plugins folder:', err);
