@@ -1,1 +1,1 @@
-console.log("plugins working")
+console.log("plugin working");

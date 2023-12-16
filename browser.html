@@ -24,6 +24,16 @@
             width: 100%;
         }
 
+        .settings {
+            background-color: #2e3039;
+            position: absolute;
+            bottom: 0;
+            height: calc(100% - 80px);
+            width: 100%;
+            z-index: 1000;
+            padding-left: 10px;
+        }
+
         .custom-controls {
             position: relative;
             top: 0;
@@ -42,7 +52,6 @@
         .custom-controls button {
             background-color: transparent;
             border: none;
-            color: #ffffff;
             font-size: 16px;
             cursor: pointer;
             outline: none;
@@ -141,6 +150,37 @@
             color: #00eeff;
             font-family: Arial, sans-serif;
         }
+
+        .light-mode body,
+        .light-mode .light-mode .header,
+        .light-mode .settings,
+        .light-mode .custom-controls,
+        .light-mode .search-bar,
+        .light-mode #bookmarks-container {
+            background-color: #f0f0f0;
+            color: #000000;
+            box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .light-mode .search-bar input[type="text"] {
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+            color: #000000;
+        }
+
+        .light-mode button {
+            color: black;
+        }
+
+        .light-mode .bookmark {
+            background-color: #e0e0e0;
+            color: #000000;
+        }
+
+        .light-mode .bookmark:hover {
+            background-color: #c0c0c0;
+            color: #000000;
+        }
     </style>
 </head>
 
@@ -150,6 +190,7 @@
             <div class="logo">
                 <h1>{BracketBrowser}</h1>
             </div>
+            <button id="settingsButton">⚙</button>
             <button id="minimize-btn">—</button>
             <button id="maximize-btn">□</button>
             <button id="close-btn">✖</button>
@@ -168,7 +209,7 @@
                     bottom: 0;
                     width: 100%;
                     height: calc(100% - 150px);
-                    z-index: 10000;
+                    z-index: 1000;
                 }
 
                 .buttons {
@@ -189,14 +230,191 @@
                     background-color: #525563;
                     color: white;
                 }
+
+                .light-mode .views {
+                    background-color: #c0c0c0;
+                    color: #000000;
+                }
+
+                .light-mode .nav.visible,
+                .light-mode .tab.visible,
+                .light-mode .tab.visible.active {
+                    background-color: #c0c0c0;
+                    color: #000000;
+                }
+
+                .light-mode .tab.visible.active {
+                    background-color: #ffffff;
+                    color: #000000;
+                }
+
+                /* Hide buttons in light mode */
+                .light-mode .buttons {
+                    display: none;
+                }
             </style>
         </tab-group>
         <div id="bookmarks-container">
         </div>
     </div>
+    <div id="settings" class="settings">
+        <h1>Settings</h1>
+        <button id="closeButton">Close</button><br><br>
+        <label for="lightModeToggle">Light Mode:</label>
+        <input type="checkbox" id="lightModeToggle" onchange="toggleLightMode()">
+        <br><br>
+        <label for="adBlockToggle">Ad Block:</label>
+        <input type="checkbox" id="adBlockToggle" onchange="toggleAdBlock()">
+        <br><br><br><br>
+        <h1>Developer Settings</h1>
+        <label for="devconsole">Dev tools:</label>
+        <input type="checkbox" id="devconsole" onchange="devtools()">
+    </div>
 
     <script src="node_modules/electron-tabs/dist/electron-tabs.js"></script>
     <script>
+        function toggleSettings() {
+            const settingsDiv = document.getElementById('settings');
+            const settingsButton = document.getElementById('settingsButton');
+
+            if (settingsDiv.style.display === 'none') {
+                settingsDiv.style.display = 'block';
+            } else {
+                settingsDiv.style.display = 'none';
+            }
+        }
+        toggleSettings();
+        const settingsButton = document.getElementById('settingsButton');
+        settingsButton.addEventListener('click', toggleSettings);
+
+        // Event listener for the close button within the settings menu
+        const closeButton = document.getElementById('closeButton');
+        closeButton.addEventListener('click', toggleSettings);
+
+
+        function devtools() {
+            const toggle = document.getElementById('devconsole');
+            if (toggle.checked) {
+                enabledevtools();
+            }
+            else {
+                disabledevtools();
+            }
+        }
+
+        // Function to toggle light mode
+        function toggleLightMode() {
+            const body = document.body;
+            const lightModeToggle = document.getElementById('lightModeToggle');
+
+            if (lightModeToggle.checked) {
+                body.classList.add('light-mode');
+                localStorage.setItem('lightMode', 'on');
+
+                if (tabGroup) {
+                    const shadowRoot = tabGroup.shadowRoot;
+
+                    // Example: Apply light mode styles to all elements within shadowRoot
+                    applyLightModeStyles(shadowRoot);
+                }
+            } else {
+                body.classList.remove('light-mode');
+                localStorage.setItem('lightMode', 'off');
+                if (tabGroup) {
+                    const shadowRoot = tabGroup.shadowRoot;
+                    removeLightModeStyles(shadowRoot);
+                }
+            }
+        }
+
+        function enabledevtools() {
+            window.electron.ipcRenderer.invoke('inspector', true).then((result) => {
+            });
+        }
+
+        // Function to disable ad block
+        function disabledevtools() {
+            window.electron.ipcRenderer.invoke('inspector', false).then((result) => {
+            });
+        }
+
+
+        function enableAdBlock() {
+            localStorage.setItem('adBlock', 'on');
+            window.electron.ipcRenderer.invoke('adblock', true).then((result) => {
+                console.log('Ad block enabled');
+            });
+        }
+
+        function disableAdBlock() {
+            localStorage.setItem('adBlock', 'off');
+            window.electron.ipcRenderer.invoke('adblock', false).then((result) => {
+                console.log('Ad block disabled');
+            });
+        }
+
+        // Check and set the default values for toggles based on localStorage
+        document.addEventListener('DOMContentLoaded', function () {
+            const lightModeToggle = document.getElementById('lightModeToggle');
+            const adBlockToggle = document.getElementById('adBlockToggle');
+
+            // Set default value for light mode toggle
+            const savedLightMode = localStorage.getItem('lightMode');
+            if (savedLightMode === 'on') {
+                lightModeToggle.checked = true;
+                toggleLightMode();
+            } else {
+                lightModeToggle.checked = false;
+                toggleLightMode();
+            }
+
+            // Set default value for ad block toggle
+            const savedAdBlock = localStorage.getItem('adBlock');
+            if (savedAdBlock === 'on') {
+                adBlockToggle.checked = true;
+                enableAdBlock();
+            } else {
+                adBlockToggle.checked = false;
+                disableAdBlock();
+            }
+        });
+        function applyLightModeStyles(root) {
+            if (!root) return;
+
+            // Apply light mode styles to elements within shadowRoot
+            // Example:
+            root.querySelectorAll('*').forEach(element => {
+                element.classList.add('light-mode');
+            });
+        }
+
+        // Function to remove light mode styles within tabGroup.shadowRoot
+        function removeLightModeStyles(root) {
+            if (!root) return;
+
+            // Remove light mode styles from elements within shadowRoot
+            // Example:
+            root.querySelectorAll('*').forEach(element => {
+                element.classList.remove('light-mode');
+            });
+        }
+
+
+        // Function to handle ad block toggle
+        function toggleAdBlock() {
+            const adBlockToggle = document.getElementById('adBlockToggle');
+
+            if (adBlockToggle.checked) {
+                enableAdBlock();
+            } else {
+                disableAdBlock();
+            }
+        }
+
+
+
+        const tabGroup = document.querySelector("tab-group");
+
         window.onbeforeunload = function () {
             return "";
         }
@@ -265,7 +483,6 @@
                 forwardLink = "";
             });
 
-            const tabGroup = document.querySelector("tab-group");
 
             const tab = tabGroup.addTab({
                 title: url,
@@ -293,12 +510,12 @@
                             search.value = tabGroup.getActiveTab().webview.src;
                             tabGroup.getActiveTab().setTitle(tabsrc);
                         }
-                        if(currentpage != tabGroup.getActiveTab().webview.src){
+                        if (currentpage != tabGroup.getActiveTab().webview.src) {
                             prevLink = currentpage;
                             currentpage = tabGroup.getActiveTab().webview.src;
                         }
                     }
-                    else if(!isInputBoxSelected()){
+                    else if (!isInputBoxSelected()) {
                         search.value = "";
                         currentpage = "";
                     }
@@ -310,7 +527,6 @@
         }
 
         function LoadNewLink_tab(url) {
-            const tabGroup = document.querySelector("tab-group");
 
             // Check if a tab with the same URL already exists
             const existingTab = tabGroup.getTabs().find(tab => tab.webview.src === url);
@@ -357,7 +573,6 @@
 
         function reload() {
             if (currentpage != "") {
-                const tabGroup = document.querySelector("tab-group");
                 const existingTab = tabGroup.getTabs().find(tab => tab.webview.src === currentpage);
                 existingTab.close();
                 LoadNewLink_tab(currentpage);
