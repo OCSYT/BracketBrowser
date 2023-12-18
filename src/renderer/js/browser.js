@@ -72,42 +72,6 @@ function applyLightModeStyles(root) {
     });
 }
 
-
-ipc.on("window.maximized", () => {
-    applyStyleToView(tabGroup.shadowRoot, "fullscreen");
-});
-ipc.on("window.restored", () => {
-    removeStyleToView(tabGroup.shadowRoot, "fullscreen");
-});
-applyStyleToView(tabGroup.shadowRoot, "fullscreen");
-
-function applyStyleToView(root, style) {
-    if (!root) return;
-    // Apply light mode styles to elements within shadowRoot
-    // Example:
-    root.querySelectorAll('*').forEach(element => {
-        element.classList.add(style);
-    });
-}
-function removeStyleToView(root, style) {
-    if (!root) return;
-    // Apply light mode styles to elements within shadowRoot
-    // Example:
-    root.querySelectorAll('*').forEach(element => {
-        element.classList.remove(style);
-    });
-}
-
-// Function to remove light mode styles within tabGroup.shadowRoot
-function removeLightModeStyles(root) {
-    if (!root) return;
-    // Remove light mode styles from elements within shadowRoot
-    // Example:
-    root.querySelectorAll('*').forEach(element => {
-        element.classList.remove('light-mode');
-    });
-}
-
 // Function to enable ad block
 function enableAdBlock() {
     localStorage.setItem('adBlock', 'on');
