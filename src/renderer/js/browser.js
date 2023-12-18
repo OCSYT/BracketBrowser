@@ -1,3 +1,6 @@
+/* Tabs */
+const tabGroup = document.querySelector("tab-group");
+
 /* Settings */
 const settingsButton = document.getElementById('settings-btn');
 settingsButton.addEventListener('click', toggleSettings);
@@ -18,12 +21,12 @@ toggleSettings();
 
 /* Devtools */
 function enabledevtools() {
-    window.electron.ipcRenderer.invoke('inspector', true).then((result) => {
+    ipc.invoke('inspector', true).then((result) => {
     });
 }
 
 function disabledevtools() {
-    window.electron.ipcRenderer.invoke('inspector', false).then((result) => {
+    ipc.invoke('inspector', false).then((result) => {
     });
 }
 function devtools() {
@@ -68,6 +71,34 @@ function applyLightModeStyles(root) {
         element.classList.add('light-mode');
     });
 }
+
+
+ipc.on("window.maximized", () => {
+    console.log("max");
+    applyStyleToView(tabGroup.shadowRoot, "fullscreen");
+});
+ipc.on("window.restored", () => {
+    removeStyleToView(tabGroup.shadowRoot, "fullscreen");
+});
+applyStyleToView(tabGroup.shadowRoot, "fullscreen");
+
+function applyStyleToView(root, style) {
+    if (!root) return;
+    // Apply light mode styles to elements within shadowRoot
+    // Example:
+    root.querySelectorAll('*').forEach(element => {
+        element.classList.add(style);
+    });
+}
+function removeStyleToView(root, style) {
+    if (!root) return;
+    // Apply light mode styles to elements within shadowRoot
+    // Example:
+    root.querySelectorAll('*').forEach(element => {
+        element.classList.remove(style);
+    });
+}
+
 // Function to remove light mode styles within tabGroup.shadowRoot
 function removeLightModeStyles(root) {
     if (!root) return;
@@ -81,7 +112,7 @@ function removeLightModeStyles(root) {
 // Function to enable ad block
 function enableAdBlock() {
     localStorage.setItem('adBlock', 'on');
-    window.electron.ipcRenderer.invoke('adblock', true).then((result) => {
+    ipc.invoke('adblock', true).then((result) => {
         console.log('Ad block enabled');
     });
 }
@@ -89,7 +120,7 @@ function enableAdBlock() {
 // Function to disable ad block
 function disableAdBlock() {
     localStorage.setItem('adBlock', 'off');
-    window.electron.ipcRenderer.invoke('adblock', false).then((result) => {
+    ipc.invoke('adblock', false).then((result) => {
         console.log('Ad block disabled');
     });
 }
@@ -129,9 +160,6 @@ function toggleAdBlock() {
         disableAdBlock();
     }
 }
-
-/* Tabs */
-const tabGroup = document.querySelector("tab-group");
 
 window.onbeforeunload = function () {
     return "";
@@ -188,7 +216,7 @@ function isInputBoxSelected() {
 
 /* Load link function */
 function LoadNewLink(url) {
-    window.electron.ipcRenderer.invoke('newpage', url).then((result) => {
+    ipc.invoke('newpage', url).then((result) => {
         prevLink = currentpage;
         currentpage = url;
         forwardLink = "";
@@ -321,7 +349,7 @@ function reload() {
 
 document.getElementById('back-btn').addEventListener('click', () => {
     if (prevLink !== "" && currentpage !== "") {
-        window.electron.ipcRenderer.invoke('newpage', prevLink).then((result) => {
+        ipc.invoke('newpage', prevLink).then((result) => {
             forwardLink = currentpage;
             currentpage = prevLink;
             prevLink = "";
@@ -332,7 +360,7 @@ document.getElementById('back-btn').addEventListener('click', () => {
 
 document.getElementById('forward-btn').addEventListener('click', () => {
     if (forwardLink !== "" && currentpage !== "") {
-        window.electron.ipcRenderer.invoke('newpage', forwardLink).then((result) => {
+        ipc.invoke('newpage', forwardLink).then((result) => {
             prevLink = currentpage;
             currentpage = forwardLink;
             forwardLink = "";

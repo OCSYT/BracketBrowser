@@ -32,8 +32,6 @@ function createMainWindow() {
         y: mainWindowState.y,
         width: mainWindowState.width,
         height: mainWindowState.height,
-        minWidth: 1200, //1000
-        minHeight: 700,
         frame: false,
         center: true,
         webPreferences: {
@@ -60,7 +58,7 @@ function createMainWindow() {
         width: mainWindow.getBounds().width,
         height: mainWindow.getBounds().height - 40
     });
-    //PageView.webContents.openDevTools();
+    PageView.webContents.openDevTools();
     mainWindow.on("resize", () => {
         PageView.setBounds({
             x: 0,
@@ -73,9 +71,11 @@ function createMainWindow() {
     /* Buttons */
     mainWindow.on("maximize", () => {
         mainWindow.webContents.send("window.maximized");
+        PageView.webContents.send("window.maximized");
     });
     mainWindow.on("unmaximize", () => {
         mainWindow.webContents.send("window.restored");
+        PageView.webContents.send("window.restored");
     });
     ipcMain.on("window.minimize", (event) => {
         mainWindow.minimize();
