@@ -301,7 +301,7 @@ function addBookmark(url) {
         const bookmarksContainer = document.getElementById('bookmarks-container');
         const bookmarkElement = document.createElement('div');
         bookmarkElement.classList.add('bookmark');
-        bookmarkElement.textContent = url;
+        bookmarkElement.textContent = url.substring(0, 25);;
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = '❌';
