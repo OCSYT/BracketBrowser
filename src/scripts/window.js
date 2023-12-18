@@ -1,8 +1,18 @@
 /* All window creation functions */
-const { BrowserWindow, BrowserView, ipcMain, app } = require("electron");
+const { BrowserWindow, BrowserView, ipcMain, app, screen } = require("electron");
 const windowStateKeeper = require("electron-window-state");
 const appdir = app.getAppPath();
 const path = require('path');
+
+
+function getScreenSize() {
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const screenWidth = primaryDisplay.bounds.width;
+    const screenHeight = primaryDisplay.bounds.height;
+
+    return { width: screenWidth, height: screenHeight };
+}
+
 
 /* Window functions */
 function createMainWindow() {
@@ -54,18 +64,18 @@ function createMainWindow() {
     PageView.webContents.loadFile(path.join(appdir, 'src', 'renderer', 'browser.html'));
     PageView.setBounds({
         x: 0,
-        y: 40,
-        width: mainWindow.getBounds().width,
-        height: mainWindow.getBounds().height - 40
+        y: Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
+        width: mainWindow.getBounds().width -  Math.round((getScreenSize().width / 100) * 1),
+        height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
     });
 
-    
+
     mainWindow.on("resize", () => {
         PageView.setBounds({
             x: 0,
-            y: 40,
+            y: Math.round((getScreenSize().height / 100) * 5),
             width: mainWindow.getBounds().width,
-            height: mainWindow.getBounds().height - 40,
+            height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5),
         });
     });
 
@@ -73,6 +83,12 @@ function createMainWindow() {
     mainWindow.on("maximize", () => {
         mainWindow.webContents.send("window.maximized");
         PageView.webContents.send("window.maximized");
+        PageView.setBounds({
+            x: 0,
+            y: Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
+            width: mainWindow.getBounds().width -  Math.round((getScreenSize().width / 100) * 1),
+            height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
+        });
     });
     mainWindow.on("unmaximize", () => {
         mainWindow.webContents.send("window.restored");
