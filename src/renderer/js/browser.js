@@ -74,7 +74,6 @@ function applyLightModeStyles(root) {
 
 
 ipc.on("window.maximized", () => {
-    console.log("max");
     applyStyleToView(tabGroup.shadowRoot, "fullscreen");
 });
 ipc.on("window.restored", () => {
