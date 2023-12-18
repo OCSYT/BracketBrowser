@@ -72,6 +72,16 @@ function applyLightModeStyles(root) {
     });
 }
 
+// Function to remove light mode styles within tabGroup.shadowRoot
+function removeLightModeStyles(root) {
+    if (!root) return;
+    // Remove light mode styles from elements within shadowRoot
+    // Example:
+    root.querySelectorAll('*').forEach(element => {
+        element.classList.remove('light-mode');
+    });
+}
+
 // Function to enable ad block
 function enableAdBlock() {
     localStorage.setItem('adBlock', 'on');
