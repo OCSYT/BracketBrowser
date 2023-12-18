@@ -55,7 +55,7 @@ function createMainWindow() {
     PageView.setBounds({
         x: 0,
         y: 40,
-        width: mainWindow.getBounds().width - 15,
+        width: mainWindow.getBounds().width,
         height: mainWindow.getBounds().height - 40
     });
 
@@ -73,12 +73,6 @@ function createMainWindow() {
     mainWindow.on("maximize", () => {
         mainWindow.webContents.send("window.maximized");
         PageView.webContents.send("window.maximized");
-        PageView.setBounds({
-            x: 0,
-            y: 40,
-            width: mainWindow.getBounds().width - 15,
-            height: mainWindow.getBounds().height - 40
-        });
     });
     mainWindow.on("unmaximize", () => {
         mainWindow.webContents.send("window.restored");
