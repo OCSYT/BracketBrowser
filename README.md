@@ -1,6 +1,6 @@
 # BracketBrowser
-Make sure you do `npm i electron` and `npm i electron-context-menu`
+Install all deps via: `npm i` then run via: `npm run start`
 
-To run do `npm start`
+Browser files are in `src/renderer`, `src/scripts` and `src/index.js`
 
-Main files are browser.html and index.js
+Installer files are in `src/installer`

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./css/browser.css">
+    <link rel="stylesheet" href="./css/fa/6.2.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="header">
+        <form id="search-form" class="search-bar">
+            <button id="back-btn" type="button"><i class="fa fa-arrow-left"></i></button>
+            <button id="forward-btn" type="button"><i class="fa fa-arrow-right"></i></button>
+            <button onclick="reload()" type="button"><i class="fa fa-refresh"></i></button>
+            <button id="settings-btn" type="button"><i class="fa fa-cog"></i></button>
+            <button onclick="addpageasbookmark()" type="button"><i class="fa fa-star"></i></button>
+            <input type="text" id="search-input" placeholder="Search...">
+        </form>
+        <tab-group new-tab-button="false" sortable="true">
+            <style>
+                .views {
+                    position: fixed;
+                    bottom: 0;
+                    width: 100%;
+                    height: calc(100% - 110px);
+                    z-index: 1000;
+                }
+
+                .buttons {
+                    display: none;
+                }
+
+                .nav.visible {
+                    background-color: #2e3039;
+                    color: white;
+                }
+
+                .tab.visible {
+                    background-color: #2e3039;
+                    color: white;
+                }
+
+                .tab.visible.active {
+                    background-color: #525563;
+                    color: white;
+                }
+
+                .light-mode .views {
+                    background-color: #c0c0c0;
+                    color: #000000;
+                }
+
+                .light-mode .nav.visible,
+                .light-mode .tab.visible,
+                .light-mode .tab.visible.active {
+                    background-color: #c0c0c0;
+                    color: #000000;
+                }
+
+                .light-mode .tab.visible.active {
+                    background-color: #ffffff;
+                    color: #000000;
+                }
+
+                /* Hide buttons in light mode */
+                .light-mode .buttons {
+                    display: none;
+                }
+            </style>
+        </tab-group>
+        <div id="bookmarks-container">
+        </div>
+    </div>
+    <div id="settings" class="settings">
+        <div class="title">
+            <h1>Settings</h1><button id="closeButton" class="closesettingsbtn"><i class="fa fa-times-circle" style="color: red;"></i> Close</button><br><br>
+        </div>
+        <label for="lightModeToggle">Light Mode:</label>
+        <input type="checkbox" id="lightModeToggle" onchange="toggleLightMode()">
+        <br><br>
+        <label for="adBlockToggle">Ad Block:</label>
+        <input type="checkbox" id="adBlockToggle" onchange="toggleAdBlock()">
+        <br><br><br><br>
+        <h1>Developer Settings</h1>
+        <label for="devconsole">Dev tools:</label>
+        <input type="checkbox" id="devconsole" onchange="devtools()">
+    </div>
+
+    <script src="../../node_modules/electron-tabs/dist/electron-tabs.js"></script>
+    <script src="./js/browser.js"></script>
+</body>
+
+</html>
