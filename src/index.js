@@ -188,11 +188,100 @@ ipcMain.handle('inspector', async (event, value) => {
     PageView.webContents.closeDevTools()
   }
 });
+ipcMain.handle('newpage', async (event, url) => {
+  /* IDFK what this is used for */
+});
 
-/* When app ready prepare and then show main window */
+/* Only let 1 instance to exist */
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', async (event, commandLine, workingDirectory) => {
+    /* Someone tried to run a second instance, we should focus our window. */
+    console.log("Second instance run");
+
+    let uri;
+
+    try {
+      if (commandLine.length >= 4) {
+        const potentialUri = commandLine[3];
+
+        if (potentialUri === '.') {
+          uri = "none";
+        } else {
+          // Assuming it's a URL
+          const url = new URL(potentialUri);
+          uri = url.href;
+        }
+      } else {
+        uri = "none";
+      }
+    } catch (error) {
+      uri = "none";
+    }
+
+    console.log(commandLine, commandLine[3], uri);
+
+    // Remove specified arguments on Windows
+    if (process.platform === 'win32') {
+      commandLine = commandLine.filter(arg => ![
+        '--allow-file-access-from-files',
+        '--secure-schemes=http,https,https',
+        '--bypasscsp-schemes',
+        '--cors-schemes',
+        '--fetch-schemes=http,https,https',
+        '--service-worker-schemes',
+        '--standard-schemes=http,https,https',
+        '--streaming-schemes'
+      ].includes(arg));
+    }
+
+    // Find the URL in the remaining arguments
+    const urlArgIndex = commandLine.findIndex(arg => arg.startsWith('http://') || arg.startsWith('https://') || arg.startsWith('file://'));
+
+    if (urlArgIndex !== -1) {
+      const url = new URL(commandLine[urlArgIndex]);
+      uri = url.href;
+
+      // Call the loadPage() function with the detected URL
+      PageView.webContents.executeJavaScript(`LoadNewLink('${uri}');`);
+    }
+
+    switch (uri) {
+      case "oauth":
+        console.log("Handle oauth");
+        // Implement your logic for handling OAuth
+        break;
+      default:
+        // Handle other cases or perform additional processing on the URI
+        //console.log("Handle other cases");
+        break;
+    }
+
+    app.on('open-url', async (event, url) => {
+      uri = url.split('/');
+      switch (uri[2]) {
+        case "oauth":
+          console.log("Handle oauth");
+          break;
+
+        default:
+          break;
+      }
+    });
+    /* Focus main window */
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    };
+  });
+};
+
+/* When app ready, prepare and then show main window */
 app.whenReady().then(() => {
-  // Create mainWindow, load the rest of the app, etc...
-  console.log("Checking for internet and getting updates");
+  /* Create mainWindow, load the rest of the app, etc... */
+  console.log("Checking for internet");
   app.whenReady().then(async () => {
     /* Create windows */
     createMainWindow();
@@ -203,6 +292,7 @@ app.whenReady().then(() => {
       }
     });
     /* Load plugins */
+    console.log("Loading plugins");
     loadPlugins(mainWindow, path.join(__dirname, '/plugins/'))
     /* Handle opening urls (MacOS) */
     app.on('open-url', (event, url) => {
@@ -216,11 +306,11 @@ app.whenReady().then(() => {
       if (isConnected) {
         mainWindow.show();
         mainWindow.center();
-        ipcMain.handle('newpage', async (event, url) => {
-
-        });
       } else {
         // TODO: Handle this
+        PageView.webContents.executeJavaScript(`LoadNewLink('file://${path.join(paths.src, 'renderer', 'not_connected.html')}');`);
+        mainWindow.show();
+        mainWindow.center();
       };
     });
   });

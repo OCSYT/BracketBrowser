@@ -5,7 +5,13 @@
   "main": "src/index.js",
   "scripts": {
     "start": "electron .",
-    "build": "npx electron-packager . BracketBrowser --protocol=http --protocol-name='http' --protocol=https --protocol-name='https' --protocol=file --protocol-name='file' --platform=linux,win32 --arch=all --icon='src/renderer/img/BracketBrowser.ico' --overwrite --out='dist/'"
+    "build-prod": "npx electron-packager . BracketBrowser --asar=true --app-id=com.bracketproto.bracketbrowser --protocol=http --protocol-name='http' --protocol=https --protocol-name='https' --protocol=file --protocol-name='file' --platform=linux,win32 --arch=all --icon='src/renderer/img/BracketBrowser.ico' --overwrite --out='dist/'",
+    "build-dev": "npx electron-packager . BracketBrowser --app-id=com.bracketproto.bracketbrowser --protocol=http --protocol-name='http' --protocol=https --protocol-name='https' --protocol=file --protocol-name='file' --platform=linux,win32 --arch=all --icon='src/renderer/img/BracketBrowser.ico' --overwrite --out='dist/'",
+    "build-installer-all": "node src/installer/build-installer.js --all",
+    "build-installer-web": "node src/installer/build-installer.js --online",
+    "build-installer-x64": "node src/installer/build-installer.js --arch x64",
+    "build-installer-ia32": "node src/installer/build-installer.js --arch ia32",
+    "build-installer-arm64": "node src/installer/build-installer.js --arch arm64"
   },
   "repository": "https://github.com/OCSYT/BracketBrowser",
   "keywords": [
@@ -16,7 +22,8 @@
   "license": "LGPL-3.0-or-later",
   "devDependencies": {
     "@electron-forge/cli": "^7.1.0",
-    "electron": "^27.0.4"
+    "electron": "^27.0.4",
+    "innosetup-compiler": "^6.2.0"
   },
   "dependencies": {
     "@cliqz/adblocker-electron": "^1.26.12",

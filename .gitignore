@@ -1,3 +1,6 @@
+# Installers
+src/insaller/*.exe
+
 # Logs
 logs
 *.log
