@@ -67,8 +67,8 @@ Root: HKCR; Subkey: "{#ProgId}\DefaultIcon"; ValueType: string; ValueName: ""; V
 Root: HKCR; Subkey: "{#ProgId}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\BracketBrowser.exe"" ""%1"""; Flags: uninsdeletevalue createvalueifdoesntexist
 
 ; Register handler for http URLs and be set as the default browser
-Root: HKCU; Subkey: "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice"; ValueType: string; ValueName: "Progid"; ValueData: "{#ProgId}"; Flags: uninsdeletekey
-Root: HKCU; Subkey: "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice"; ValueType: string; ValueName: "Hash"; ValueData: "{#ProgHash}"; Flags: uninsdeletekey
+Root: HKCU; Subkey: "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice"; ValueType: string; ValueName: "Progid"; ValueData: "{#ProgId}"; Flags: uninsdeletekey createvalueifdoesntexist
+Root: HKCU; Subkey: "Software\Microsoft\Windows\Shell\Associations\UrlAssociations\http\UserChoice"; ValueType: string; ValueName: "Hash"; ValueData: "{#ProgHash}"; Flags: uninsdeletekey createvalueifdoesntexist
 
 [Files]
 ; Include ../../dist/BracketBrowser-win32-x64:
