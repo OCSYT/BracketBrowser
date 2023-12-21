@@ -79,15 +79,27 @@ function createMainWindow() {
 
     /* Buttons */
     mainWindow.on("maximize", () => {
+        console.log(mainWindow.fullScreen);
         mainWindow.webContents.send("window.maximized");
         PageView.webContents.send("window.maximized");
-        PageView.setBounds({
-            x: 0,
-            y: Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
-            width: mainWindow.getBounds().width - Math.round((getScreenSize().width / 100) * 1),
-            height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
-        });
+        if (mainWindow.fullScreen != true) {
+            PageView.setBounds({
+                x: 0,
+                y: Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
+                width: mainWindow.getBounds().width - Math.round((getScreenSize().width / 100) * 1),
+                height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
+            });
+        }
+        else{
+            PageView.setBounds({
+                x: 0,
+                y: 0,
+                width: getScreenSize().width,
+                height: getScreenSize().height,
+            });
+        }
     });
+
     mainWindow.on("unmaximize", () => {
         mainWindow.webContents.send("window.restored");
         PageView.webContents.send("window.restored");
