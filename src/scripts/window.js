@@ -79,7 +79,6 @@ function createMainWindow() {
 
     /* Buttons */
     mainWindow.on("maximize", () => {
-        console.log(mainWindow.fullScreen);
         mainWindow.webContents.send("window.maximized");
         PageView.webContents.send("window.maximized");
         if (mainWindow.fullScreen != true) {
