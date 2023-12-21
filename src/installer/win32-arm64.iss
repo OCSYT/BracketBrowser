@@ -168,17 +168,17 @@ begin
 
     BitmapImage1 := TBitmapImage.Create(Splash);
     BitmapImage1.AutoSize := True;
-    BitmapImage1.Align := alClient;
+    BitmapImage1.Align := alNone;
     BitmapImage1.Left := 0;
     BitmapImage1.Top := 0;
-    BitmapImage1.stretch := True;
+    BitmapImage1.Center := True;
     BitmapImage1.Parent := Splash;
 
     ExtractTemporaryFile('splash.bmp');
     BitmapImage1.Bitmap.LoadFromFile(ExpandConstant('{tmp}') + '\splash.bmp');
 
-    Splash.Width := BitmapImage1.Width;
-    Splash.Height := BitmapImage1.Height;
+    Splash.Width := Round(BitmapImage1.Bitmap.Width / 1.2);
+    Splash.Height := Round(BitmapImage1.Bitmap.Height / 1.2);
 
     Splash.Position := poScreenCenter;
   
