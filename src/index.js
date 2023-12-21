@@ -71,7 +71,7 @@ async function fetchAndParseBlocklists(urls) {
       }
     }
     const uniqueDomainArray = [...allDomains]; // Convert Set to an array
-    console.log(uniqueDomainArray);
+    console.log("Loaded bocklists:", uniqueDomainArray);
     return uniqueDomainArray;
   } catch (error) {
     console.error(error);
@@ -193,7 +193,7 @@ function handleURL(commandLine) {
     uri = "none";
   }
 
-  console.log(commandLine, commandLine[3], uri);
+  //console.log(commandLine, commandLine[3], uri);
 
   // Remove specified arguments on Windows
   if (process.platform === 'win32') {

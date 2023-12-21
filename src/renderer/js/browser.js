@@ -1,42 +1,30 @@
+// Constants for element IDs
+const settingsButton = document.getElementById('settings-btn');
+const settingsDiv = document.getElementById('settings');
+const closeButton = document.getElementById('closeButton');
+const lightModeToggle = document.getElementById('lightModeToggle');
+const adBlockToggle = document.getElementById('adBlockToggle');
+
 /* Tabs */
 const tabGroup = document.querySelector("tab-group");
 
-/* Settings */
-const settingsButton = document.getElementById('settings-btn');
+// Event listeners for settings button and close button
 settingsButton.addEventListener('click', toggleSettings);
-function toggleSettings() {
-    const settingsDiv = document.getElementById('settings');
-    const settingsButton = document.getElementById('settings-btn');
+closeButton.addEventListener('click', toggleSettings);
 
+// Function to toggle display of settings
+function toggleSettings() {
     if (settingsDiv.style.display === 'none') {
         settingsDiv.style.display = 'block';
     } else {
         settingsDiv.style.display = 'none';
     }
 }
-// Event listener for the close button within the settings menu
-const closeButton = document.getElementById('closeButton');
-closeButton.addEventListener('click', toggleSettings);
 toggleSettings();
 
-/* Devtools */
-function enabledevtools() {
-    ipc.invoke('inspector', true).then((result) => {
-    });
-}
-
-function disabledevtools() {
-    ipc.invoke('inspector', false).then((result) => {
-    });
-}
-function devtools() {
-    const toggle = document.getElementById('devconsole');
-    if (toggle.checked) {
-        enabledevtools();
-    } else {
-        disabledevtools();
-    }
-}
+// Event listeners for light mode and ad block toggles
+lightModeToggle.addEventListener('change', toggleLightMode);
+adBlockToggle.addEventListener('change', toggleAdBlock);
 
 // Function to toggle light mode
 function toggleLightMode() {
@@ -46,27 +34,17 @@ function toggleLightMode() {
     if (lightModeToggle.checked) {
         body.classList.add('light-mode');
         localStorage.setItem('lightMode', 'on');
-
-        if (tabGroup) {
-            const shadowRoot = tabGroup.shadowRoot;
-
-            // Example: Apply light mode styles to all elements within shadowRoot
-            applyLightModeStyles(shadowRoot);
-        }
+        applyLightModeStyles(tabGroup?.shadowRoot);
     } else {
         body.classList.remove('light-mode');
         localStorage.setItem('lightMode', 'off');
-        if (tabGroup) {
-            const shadowRoot = tabGroup.shadowRoot;
-            removeLightModeStyles(shadowRoot);
-        }
+        removeLightModeStyles(tabGroup?.shadowRoot);
     }
 }
-// Function to add light mode styles within tabGroup.shadowRoot
+
+// Function to apply light mode styles within tabGroup.shadowRoot
 function applyLightModeStyles(root) {
     if (!root) return;
-    // Apply light mode styles to elements within shadowRoot
-    // Example:
     root.querySelectorAll('*').forEach(element => {
         element.classList.add('light-mode');
     });
@@ -75,8 +53,6 @@ function applyLightModeStyles(root) {
 // Function to remove light mode styles within tabGroup.shadowRoot
 function removeLightModeStyles(root) {
     if (!root) return;
-    // Remove light mode styles from elements within shadowRoot
-    // Example:
     root.querySelectorAll('*').forEach(element => {
         element.classList.remove('light-mode');
     });
@@ -85,7 +61,7 @@ function removeLightModeStyles(root) {
 // Function to enable ad block
 function enableAdBlock() {
     localStorage.setItem('adBlock', 'on');
-    ipc.invoke('adblock', true).then((result) => {
+    ipc.invoke('adblock', true).then(() => {
         console.log('Ad block enabled');
     });
 }
@@ -93,101 +69,76 @@ function enableAdBlock() {
 // Function to disable ad block
 function disableAdBlock() {
     localStorage.setItem('adBlock', 'off');
-    ipc.invoke('adblock', false).then((result) => {
+    ipc.invoke('adblock', false).then(() => {
         console.log('Ad block disabled');
     });
 }
 
-// Check and set the default values for toggles based on localStorage
+// Check and set default values for toggles based on localStorage
 document.addEventListener('DOMContentLoaded', function () {
     const lightModeToggle = document.getElementById('lightModeToggle');
     const adBlockToggle = document.getElementById('adBlockToggle');
 
     // Set default value for light mode toggle
     const savedLightMode = localStorage.getItem('lightMode');
-    if (savedLightMode === 'on') {
-        lightModeToggle.checked = true;
-        toggleLightMode();
-    } else {
-        lightModeToggle.checked = false;
-        toggleLightMode();
-    }
+    lightModeToggle.checked = savedLightMode === 'on';
+    toggleLightMode();
 
     // Set default value for ad block toggle
     const savedAdBlock = localStorage.getItem('adBlock');
-    if (savedAdBlock === 'on') {
-        adBlockToggle.checked = true;
-        enableAdBlock();
-    } else {
-        adBlockToggle.checked = false;
-        disableAdBlock();
-    }
+    adBlockToggle.checked = savedAdBlock === 'on';
+    toggleAdBlock();
 });
+
 // Function to handle ad block toggle
 function toggleAdBlock() {
-    const adBlockToggle = document.getElementById('adBlockToggle');
-
-    if (adBlockToggle.checked) {
-        enableAdBlock();
-    } else {
-        disableAdBlock();
-    }
+    adBlockToggle.checked ? enableAdBlock() : disableAdBlock();
 }
 
+// Window unload event
 window.onbeforeunload = function () {
-    return "";
+    return '';
 }
 
-let prevLink = "";
-let currentpage = "";
-let forwardLink = "";
+// Variables for page history
+let prevLink = '';
+let currentpage = '';
+let forwardLink = '';
 
-/* Search */
+// Search form event listener
 document.getElementById('search-form').addEventListener('submit', function (event) {
     event.preventDefault();
     var searchValue = document.getElementById('search-input').value;
-    var urlPattern = /(?:https?:\/\/)?(?:[\w-]+\.)+[a-z]{2,}(?:\/\S*)?/gi;
-    if (urlPattern.test(searchValue)) {
-        if (!searchValue.includes("file://")) {
-            if (!searchValue.includes("http") && !searchValue.includes("https")) {
-                if (searchValue.includes("http") && !searchValue.includes("https")) {
-                    searchValue = "http://" + searchValue;
-                }
-                else {
-                    searchValue = "https://" + searchValue;
-                }
-            }
-        }
-    } else {
-        var ipAddressPattern = /^(\d{1,3}\.){3}\d{1,3}(?::\d+)?$/
-        var withoutProtocol = searchValue.replace("http://", "").replace("https://", "");
-        if (ipAddressPattern.test(withoutProtocol)) {
-            if (searchValue.includes("http") && !searchValue.includes("https")) {
-                searchValue = "http://" + withoutProtocol;
-            }
-            else {
-                searchValue = "https://" + withoutProtocol;
-            }
-        } else {
-            searchValue = buildURL(searchValue);
-        }
-    }
-
+    searchValue = normalizeSearchValue(searchValue);
     LoadNewLink(searchValue);
 });
-/* Build search url */
+
+// Function to normalize search value
+function normalizeSearchValue(value) {
+    // Trim leading and trailing whitespaces
+    const trimmedValue = value.trim();
+
+    // Check if the input is a valid URL
+    const isURL = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/.test(trimmedValue);
+
+    // If it's a valid URL, return as is; otherwise, perform a search
+    return isURL ? trimmedValue : buildURL(trimmedValue);
+}
+
+
+// Function to build search URL
 function buildURL(string) {
     return `https://www.google.com/search?q=${encodeURIComponent(string)}`;
 }
 
+// Function to check if an input box is selected
 function isInputBoxSelected() {
     const focusedElement = document.activeElement;
-    // Check if the focused element is an input element
     const isInput = focusedElement.tagName === 'INPUT' || focusedElement.tagName === 'TEXTAREA';
     return isInput;
 }
 
-/* Load link function */
+// Function to load a new link
 function LoadNewLink(url) {
     ipc.invoke('newpage', url).then((result) => {
         prevLink = currentpage;
@@ -198,6 +149,7 @@ function LoadNewLink(url) {
     const tab = tabGroup.addTab({
         title: url,
         src: url,
+        //iconURL: new URL(url).origin + '/favicon.ico'
     });
 
     // Activate the tab
@@ -225,8 +177,7 @@ function LoadNewLink(url) {
                     prevLink = currentpage;
                     currentpage = tabGroup.getActiveTab().webview.src;
                 }
-            }
-            else if (!isInputBoxSelected()) {
+            } else if (!isInputBoxSelected()) {
                 search.value = "";
                 currentpage = "";
             }
@@ -237,6 +188,7 @@ function LoadNewLink(url) {
     listenForSrcChanges();
 }
 
+// Function to load a new link in a tab
 function LoadNewLink_tab(url) {
     // Check if a tab with the same URL already exists
     const existingTab = tabGroup.getTabs().find(tab => tab.webview.src === url);
@@ -249,6 +201,7 @@ function LoadNewLink_tab(url) {
         const tab = tabGroup.addTab({
             title: url,
             src: url,
+            //iconURL: new URL(url).origin + '/favicon.ico'
         });
 
         // Activate the newly created tab
@@ -261,21 +214,27 @@ function LoadNewLink_tab(url) {
     }
 }
 
-/* Bookmarks */
-bookmarks = [];
+// Bookmarks array
+let bookmarks = [];
+
+// Function to save bookmarks to localStorage
 function saveBookmarks() {
     localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
 }
+
+// Function to add the current page as a bookmark
 function addpageasbookmark() {
     addBookmark(currentpage);
 }
 
+// Function to add a bookmark
 function addBookmark(url) {
     if (bookmarks.includes(url) == false) {
         const bookmarksContainer = document.getElementById('bookmarks-container');
+        bookmarksContainer.style.display = "";
         const bookmarkElement = document.createElement('div');
         bookmarkElement.classList.add('bookmark');
-        bookmarkElement.textContent = url.substring(0, 25);;
+        bookmarkElement.textContent = url.substring(0, 25);
 
         const deleteButton = document.createElement('button');
         deleteButton.textContent = '❌';
@@ -300,18 +259,22 @@ function addBookmark(url) {
         bookmarksContainer.appendChild(bookmarkElement);
     }
 }
+
+// Function to load bookmarks from localStorage
 function loadBookmarks() {
     const storedBookmarks = localStorage.getItem('bookmarks');
     if (storedBookmarks) {
+        document.getElementById('bookmarks-container').style.display = "";
         var savedbookmarks = JSON.parse(storedBookmarks);
         savedbookmarks.forEach(bookmark => {
             addBookmark(bookmark);
         });
+    } else {
+        document.getElementById('bookmarks-container').style.display = "none";
     }
 }
-loadBookmarks();
 
-/* Other buttons, reload back forward etc */
+// Other buttons, reload, back, forward, etc.
 function reload() {
     if (currentpage != "") {
         const existingTab = tabGroup.getTabs().find(tab => tab.webview.src === currentpage);
@@ -342,5 +305,34 @@ document.getElementById('forward-btn').addEventListener('click', () => {
     }
 });
 
-/* Load default url */
-LoadNewLink("https://google.com/");
+// Set default new tab
+tabGroup.setDefaultTab({
+    title: 'Google Search',
+    src: 'https://google.com/',
+    active: true,
+    //iconURL: 'https://google.com/favicon.ico'
+});
+
+document.addEventListener('DOMContentLoaded', function () {
+    /*setInterval(() => {
+        // Get all elements with the class "tab-icon"
+        const tabIcons = document.querySelectorAll('.tab-icon img');
+        console.log(tabIcons);
+
+        // Iterate through each tab icon image
+        tabIcons.forEach(imgElement => {
+            console.log(imgElement);
+            // Add the onerror event listener to handle image load errors
+            imgElement.onerror = function () {
+                // Replace the broken image with a placeholder or a default image
+                imgElement.src = 'path/to/placeholder.png'; // Replace with your placeholder image URL
+            };
+        });
+    }, 1000);*/
+    loadBookmarks();
+    // Check if no tabs exist, if so create a new one
+    if (currentpage == '') {
+        console.log("No tabs");
+        tabGroup.addTab();
+    };
+});

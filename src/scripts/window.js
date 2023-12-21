@@ -61,39 +61,36 @@ function createMainWindow() {
         }
     }));
     mainWindow.setBrowserView(PageView);
-    PageView.webContents.loadFile(path.join(appdir, 'src', 'renderer', 'browser.html'));
-    PageView.setBounds({
-        x: 0,
-        y: Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
-        width: mainWindow.getBounds().width - Math.round((getScreenSize().width / 100) * 1),
-        height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
-    });
-    mainWindow.on("resize", () => {
+    function resizePageView() {
         PageView.setBounds({
             x: 0,
-            y: Math.round((getScreenSize().height / 100) * 5),
+            y: 40,
             width: mainWindow.getBounds().width,
-            height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5),
+            height: mainWindow.getBounds().height - 40,
         });
+    }
+    PageView.webContents.loadFile(path.join(appdir, 'src', 'renderer', 'browser.html'));
+    PageView.webContents.openDevTools();
+    PageView.webContents.on('did-finish-load', () => {
+        resizePageView();
+    });
+    mainWindow.on("resize", () => {
+        resizePageView();
     });
 
     /* Buttons */
     mainWindow.on("maximize", () => {
         mainWindow.webContents.send("window.maximized");
         PageView.webContents.send("window.maximized");
-        if (mainWindow.fullScreen != true) {
+        if (mainWindow.fullScreen !== true) {
+            /* Adjust bounds when not in full screen */
+            resizePageView();
+        } else {
+            /* Adjust bounds when in full screen */
             PageView.setBounds({
                 x: 0,
-                y: Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
-                width: mainWindow.getBounds().width - Math.round((getScreenSize().width / 100) * 1),
-                height: mainWindow.getBounds().height - Math.round((getScreenSize().height / 100) * 5) - Math.round((getScreenSize().height / 100) * 1),
-            });
-        }
-        else{
-            PageView.setBounds({
-                x: 0,
-                y: 0,
-                width: getScreenSize().width,
+                y: 40,
+                width: getScreenSize().width - 40,
                 height: getScreenSize().height,
             });
         }
@@ -122,7 +119,8 @@ function createMainWindow() {
     /* Fix for when window was last saved in maximised but started normal */
     if (mainWindowState.isMaximized == true) {
         mainWindow.webContents.send("window.maximized");
-        mainWindow.webContents.executeJavaScript("document.getElementById('maximize').style.display = 'none'; && document.getElementById('restore').style.display = 'flex';");
+        mainWindow.webContents.executeJavaScript("document.getElementById('maximize').style.display = 'none';");
+        mainWindow.webContents.executeJavaScript("document.getElementById('restore').style.display = 'flex';");
     };
 }
 
