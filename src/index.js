@@ -20,6 +20,7 @@ if (process.platform !== "win32" && process.platform !== "darwin") { // TODO: Ad
 /* Window functions */
 const { createMainWindow } = require("./scripts/window");
 
+/* Check if we can *ping* google.com */
 function checkInternet(cb) {
   require('dns').lookup('google.com', function (err) {
     if (err && err.code == "ENOTFOUND") {
@@ -30,7 +31,7 @@ function checkInternet(cb) {
   })
 };
 
-// Function to load a new page in the mainWindow
+/* Function to load a new page in the mainWindow */
 function loadNewPage(mainWindow, url) {
   if (mainWindow && mainWindow.webContents) {
     mainWindow.webContents.executeJavaScript(`LoadNewLink("${url}")`)
@@ -170,6 +171,79 @@ function loadPlugins(mainWindow) {
   });
 }
 
+/* Handle openning URLS */
+function handleURL(commandLine) {
+  let uri;
+
+  try {
+    if (commandLine.length >= 4) {
+      const potentialUri = commandLine[3];
+
+      if (potentialUri === '.') {
+        uri = "none";
+      } else {
+        // Assuming it's a URL
+        const url = new URL(potentialUri);
+        uri = url.href;
+      }
+    } else {
+      uri = "none";
+    }
+  } catch (error) {
+    uri = "none";
+  }
+
+  console.log(commandLine, commandLine[3], uri);
+
+  // Remove specified arguments on Windows
+  if (process.platform === 'win32') {
+    commandLine = commandLine.filter(arg => ![
+      '--allow-file-access-from-files',
+      '--secure-schemes=http,https,https',
+      '--bypasscsp-schemes',
+      '--cors-schemes',
+      '--fetch-schemes=http,https,https',
+      '--service-worker-schemes',
+      '--standard-schemes=http,https,https',
+      '--streaming-schemes'
+    ].includes(arg));
+  }
+
+  // Find the URL in the remaining arguments
+  const urlArgIndex = commandLine.findIndex(arg => arg.startsWith('http://') || arg.startsWith('https://') || arg.startsWith('file://'));
+
+  if (urlArgIndex !== -1) {
+    const url = new URL(commandLine[urlArgIndex]);
+    uri = url.href;
+
+    // Call the loadPage() function with the detected URL
+    PageView.webContents.executeJavaScript(`LoadNewLink('${uri}');`);
+  }
+
+  switch (uri) {
+    case "oauth":
+      console.log("Handle oauth");
+      // Implement your logic for handling OAuth
+      break;
+    default:
+      // Handle other cases or perform additional processing on the URI
+      //console.log("Handle other cases");
+      break;
+  }
+
+  app.on('open-url', async (event, url) => {
+    uri = url.split('/');
+    switch (uri[2]) {
+      case "oauth":
+        console.log("Handle oauth");
+        break;
+
+      default:
+        break;
+    }
+  });
+};
+
 /* Register protocol schemes */
 protocol.registerSchemesAsPrivileged([
   { scheme: 'http', privileges: { standard: true, secure: true, supportFetchAPI: true } },
@@ -200,76 +274,8 @@ if (!gotTheLock) {
   app.on('second-instance', async (event, commandLine, workingDirectory) => {
     /* Someone tried to run a second instance, we should focus our window. */
     console.log("Second instance run");
-
-    let uri;
-
-    try {
-      if (commandLine.length >= 4) {
-        const potentialUri = commandLine[3];
-
-        if (potentialUri === '.') {
-          uri = "none";
-        } else {
-          // Assuming it's a URL
-          const url = new URL(potentialUri);
-          uri = url.href;
-        }
-      } else {
-        uri = "none";
-      }
-    } catch (error) {
-      uri = "none";
-    }
-
-    console.log(commandLine, commandLine[3], uri);
-
-    // Remove specified arguments on Windows
-    if (process.platform === 'win32') {
-      commandLine = commandLine.filter(arg => ![
-        '--allow-file-access-from-files',
-        '--secure-schemes=http,https,https',
-        '--bypasscsp-schemes',
-        '--cors-schemes',
-        '--fetch-schemes=http,https,https',
-        '--service-worker-schemes',
-        '--standard-schemes=http,https,https',
-        '--streaming-schemes'
-      ].includes(arg));
-    }
-
-    // Find the URL in the remaining arguments
-    const urlArgIndex = commandLine.findIndex(arg => arg.startsWith('http://') || arg.startsWith('https://') || arg.startsWith('file://'));
-
-    if (urlArgIndex !== -1) {
-      const url = new URL(commandLine[urlArgIndex]);
-      uri = url.href;
-
-      // Call the loadPage() function with the detected URL
-      PageView.webContents.executeJavaScript(`LoadNewLink('${uri}');`);
-    }
-
-    switch (uri) {
-      case "oauth":
-        console.log("Handle oauth");
-        // Implement your logic for handling OAuth
-        break;
-      default:
-        // Handle other cases or perform additional processing on the URI
-        //console.log("Handle other cases");
-        break;
-    }
-
-    app.on('open-url', async (event, url) => {
-      uri = url.split('/');
-      switch (uri[2]) {
-        case "oauth":
-          console.log("Handle oauth");
-          break;
-
-        default:
-          break;
-      }
-    });
+    /* Handle Opening URL's */
+    handleURL(commandLine);
     /* Focus main window */
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
@@ -298,9 +304,11 @@ app.whenReady().then(() => {
     app.on('open-url', (event, url) => {
       event.preventDefault();
       if (mainWindow) {
-        loadNewPage(mainWindow, url);
+        //loadNewPage(mainWindow, url);
       }
     });
+    /* Handle Opening URL's */
+    handleURL(process.argv);
     /* Check for internet */
     checkInternet(function (isConnected) {
       if (isConnected) {
